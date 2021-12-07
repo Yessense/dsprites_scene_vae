@@ -107,7 +107,15 @@ class DSprites(SceneDataset):
     ----------
     root : string
         Root directory of dataset.
+
+    Color: white
+    Shape: square, ellipse, heart
+    Scale: 6 values linearly spaced in [0.5, 1]
+    Orientation: 40 values in [0, 2 pi]
+    Position X: 32 values in [0, 1]
+    Position Y: 32 values in [0, 1]
     """
+
     urls = {
         "train": "https://github.com/deepmind/dsprites-dataset/blob/master/dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz?raw=true"}
     files = {"train": "dsprite_train.npz"}
