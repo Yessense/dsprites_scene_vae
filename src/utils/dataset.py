@@ -145,7 +145,7 @@ class DSprites(SceneDataset):
                   'shape': np.array([1., 2., 3.]),
                   'color': np.array([1.])}
 
-    def __init__(self, root=os.path.join(DIR, '../data/dsprites/'), **kwargs):
+    def __init__(self, root=os.path.join(DIR, '../../data/dsprites/'), **kwargs):
         super().__init__(root, [transforms.ToTensor()], **kwargs)
 
         dataset_zip = np.load(self.train_data)
