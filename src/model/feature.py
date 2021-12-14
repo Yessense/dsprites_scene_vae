@@ -13,9 +13,8 @@ class FeatureLayer(nn.Module):
         self.feature_processors: List[nn.Module] = feature_processors
 
     def forward(self, x):
-        # split vectors by features
         feature_vectors_list = x.unbind(1)
-
+        # split vectors by features
         # process each separate vector
         out = [processor(feature) for processor, feature in zip(self.feature_processors, feature_vectors_list)]
 

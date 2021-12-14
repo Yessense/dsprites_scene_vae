@@ -176,13 +176,13 @@ if __name__ == '__main__':
     model = autoencoder.to(device)
 
 
-    # criterion = vae_loss
-    # optimizer = torch.optim.Adam(autoencoder.parameters(), lr=lr)
-    # logging.info(f'Setting up dataloader')
-    # dataloader = get_dataloader('dsprites')
-    #
-    # losses = train_model(autoencoder, optimizer, dataloader, criterion, n_epochs, device, feature_processors)
-    # save_model(autoencoder)
+    criterion = vae_loss
+    optimizer = torch.optim.Adam(autoencoder.parameters(), lr=lr)
+    logging.info(f'Setting up dataloader')
+    dataloader = get_dataloader('dsprites')
+
+    losses = train_model(autoencoder, optimizer, dataloader, criterion, n_epochs, device, feature_processors)
+    save_model(autoencoder)
 
     # ------------------------------------------------------------
     # test

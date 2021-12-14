@@ -6,6 +6,7 @@ from torch import nn
 from src.model.decoder import Decoder
 from src.model.encoder import Encoder
 from src.model.feature import FeatureClassifier, FeatureRegressor, FeatureLayer
+from src.model.feedforward import FeedForward
 
 
 class VAE(nn.Module):
@@ -22,6 +23,8 @@ class VAE(nn.Module):
 
         self.feature_layer = FeatureLayer(latent_dim=latent_dim,
                                           feature_processors=feature_processors)
+        self.feed_forward = FeedForward(latent_dim=latent_dim)
+
         self.n_features = len(feature_processors)
 
     def reparameterize(self, mean, logvar):
@@ -57,7 +60,9 @@ class VAE(nn.Module):
 
         mean, log_var = self.encoder(x)
         latent_sample = self.reparameterize(mean, log_var)
-        return torch.unsqueeze(latent_sample, 0)
+        latent_sample = torch.unsqueeze(latent_sample, 0)
+        z_i = self.feed_forward(latent_sample)
+        return z_i
 
     def decode_latent(self, x, reduce=True):
         if reduce:
@@ -90,8 +95,9 @@ class VAE(nn.Module):
 
         # (batch_size, n_features, latent_dim)
         # sum by features
+        z_i = self.feed_forward(z_i)
 
-        scene = torch.mean(z_i, 1)
+        scene = sum(z_i)
         reconstruct = self.decoder(scene)
 
         return reconstruct, mean, log_var, latent_sample, feature_discr
