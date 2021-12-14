@@ -8,7 +8,7 @@ from torch import nn
 
 class Encoder(nn.Module):
     def __init__(self, image_size: Tuple[int, int, int] = (1, 32, 32),
-                 latent_dim: int = 6):
+                 latent_dim: int = 6, n_features=5):
         super(Encoder, self).__init__()
         """
         Color: white
@@ -28,7 +28,6 @@ class Encoder(nn.Module):
         self.image_size = image_size
         self.reshape = (hidden_channels, kernel_size, kernel_size)
 
-
         n_channels = self.image_size[0]
 
         # Convolutional layers
@@ -36,34 +35,33 @@ class Encoder(nn.Module):
         self.conv1 = nn.Conv2d(n_channels, hidden_channels, kernel_size, **cnn_kwargs)
         self.conv2 = nn.Conv2d(hidden_channels, hidden_channels, kernel_size, **cnn_kwargs)
         self.conv3 = nn.Conv2d(hidden_channels, hidden_channels, kernel_size, **cnn_kwargs)
+        self.conv_64 = nn.Conv2d(hidden_channels, hidden_channels, kernel_size, **cnn_kwargs)
 
         # Fully connected layers
         self.lin1 = nn.Linear(np.product(self.reshape), hidden_dim)
         self.lin2 = nn.Linear(hidden_dim, hidden_dim)
 
         # Fully connected layers for mean and variance
-        self.mu_logvar_gen = nn.Linear(hidden_dim, self.latent_dim * 2)
+        self.mu_logvar_gen = nn.Linear(hidden_dim, 2 * self.latent_dim * n_features)
 
+        self.activation = torch.nn.GELU()
 
     def forward(self, x):
         batch_size = x.size(0)
 
         # Convolutional layers with activation
-        x = torch.relu(self.conv1(x))
-        x = torch.relu(self.conv2(x))
-        x = torch.relu(self.conv3(x))
+        x = self.activation(self.conv1(x))
+        x = self.activation(self.conv2(x))
+        x = self.activation(self.conv3(x))
+        x = self.activation(self.conv_64(x))
 
         # Fully connected layers with ReLu activations
         x = x.view((batch_size, -1))
-        x = torch.relu(self.lin1(x))
-        x = torch.relu(self.lin2(x))
+        x = self.activation(self.lin1(x))
+        x = self.activation(self.lin2(x))
 
         # Fully connected layer for log variance and mean
-        mu_logvar = self.mu_logvar_gen(x)
-        mu, logvar = mu_logvar.view(-1, self.latent_dim, 2).unbind(-1)
+        mean_log_var = self.mu_logvar_gen(x)
+        mean, log_var = mean_log_var.view(-1, self.latent_dim, 2).unbind(-1)
 
-        return mu, logvar
-
-
-
-
+        return mean, log_var
